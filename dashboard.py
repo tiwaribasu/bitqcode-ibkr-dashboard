@@ -9,7 +9,7 @@ from datetime import datetime
 # 🛠️ CONFIGURATION
 # ===================================================================
 CURRENCY_SYMBOL = "$"
-REFRESH_INTERVAL_SEC = 30
+REFRESH_INTERVAL_SEC = 30  # Data auto-refreshes every 30 sec (no page reload needed)
 
 # ===================================================================
 # 🔐 Load Google Sheet URL from Streamlit Secrets
@@ -45,12 +45,13 @@ def format_percent(val):
     return f"{val:+.2f}%"
 
 # ===================================================================
-# 📥 Load & Clean Data
+# 📥 Load & Clean Data — STRICTEST FILTERING
 # ===================================================================
 @st.cache_data(ttl=REFRESH_INTERVAL_SEC)
 def load_data(url):
     try:
-        return pd.read_csv(url)
+        df = pd.read_csv(url)
+        return df
     except Exception as e:
         st.error(f"❌ Failed to load data: {str(e)[:150]}...")
         return pd.DataFrame()
@@ -69,15 +70,24 @@ if not required_cols.issubset(df_raw.columns):
     st.error(f"⚠️ Missing columns: {required_cols - set(df_raw.columns)}")
     st.stop()
 
+# Select only needed columns
 df = df_raw[list(required_cols)].copy()
 
+# Convert to numeric
 for col in ['Position', 'AvgCost', 'MarketPrice']:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-df = df.dropna(subset=['Symbol', 'Position', 'AvgCost', 'MarketPrice'])
+# 🔥 AGGRESSIVE CLEANING: Remove ALL invalid/empty rows
+df = df.dropna(subset=['Symbol', 'Position', 'AvgCost', 'MarketPrice'])  # No NaN in key cols
+
+# Remove rows where Symbol or Strategy is blank (including whitespace)
+df = df[df['Symbol'].astype(str).str.strip() != '']
+df = df[df['Strategy Name'].astype(str).str.strip() != '']
+
+# Remove zero positions
 df = df[df['Position'] != 0]
-df = df[df['Symbol'].str.strip() != '']
-df = df[df['Strategy Name'].str.strip() != '']
+
+# Final reset
 df = df.reset_index(drop=True)
 
 if df.empty:
@@ -113,7 +123,7 @@ df['Account'] = df['Account'].apply(mask_account)
 df = df.iloc[df['UnrealizedPnL'].abs().argsort()[::-1]].reset_index(drop=True)
 
 # ===================================================================
-# 🎯 BIG BOLD TOTAL P&L AT TOP
+# 🎯 BIG BOLD TOTAL P&L
 # ===================================================================
 pnl_color = "green" if total_pnl >= 0 else "red"
 pnl_symbol = "▲" if total_pnl >= 0 else "▼"
@@ -133,40 +143,41 @@ st.markdown(
 )
 
 # ===================================================================
-# 📊 Metrics Row
+# 📊 Metrics
 # ===================================================================
 col1, col2, col3 = st.columns(3)
 with col1:
     st.metric("Total Exposure", format_currency(total_exposure))
 with col2:
     st.metric("Total Cost", format_currency(total_cost))
-# with col3:
-#     st.metric("Net P&L %", format_percent(total_pnl_pct))
 with col3:
     st.metric("Positions", len(df))
 
-st.caption(f"Last Updated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+st.caption(f"Live data • Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
 
 st.divider()
 
 # ===================================================================
-# 📋 Open Positions Table (ONLY if data exists — guaranteed by st.stop above)
+# 📋 Open Positions — ONLY VALID ROWS
 # ===================================================================
 st.subheader("📋 Open Positions")
 
+# Final display columns
 display_df = df[[
     'Strategy Name', 'Account', 'Symbol', 'SecType', 'Long/Short',
     'Position', 'AvgCost', 'MarketPrice', 'UnrealizedPnL', 'UnrealizedPnL%'
 ]].copy()
 
+# Formatting
 display_df['AvgCost'] = display_df['AvgCost'].apply(format_currency)
 display_df['MarketPrice'] = display_df['MarketPrice'].apply(format_currency)
 display_df['UnrealizedPnL'] = display_df['UnrealizedPnL'].apply(format_currency)
 display_df['UnrealizedPnL%'] = display_df['UnrealizedPnL%'].apply(format_percent)
 
+# Color styling
 def color_pnl(val):
     if isinstance(val, str):
-        if "−" in val or (f"{CURRENCY_SYMBOL}-" in val) or (val.startswith("-") and CURRENCY_SYMBOL not in val):
+        if "−" in val or f"{CURRENCY_SYMBOL}-" in val or (val.startswith("-") and CURRENCY_SYMBOL not in val):
             return "color: red; font-weight: bold;"
         elif val.startswith(f"{CURRENCY_SYMBOL}") or "+" in val:
             return "color: green; font-weight: bold;"
@@ -184,7 +195,7 @@ styled_df = display_df.style \
     .applymap(color_pnl, subset=['UnrealizedPnL']) \
     .applymap(color_percent, subset=['UnrealizedPnL%'])
 
-st.dataframe(styled_df, use_container_width=True, height=520)
+st.dataframe(styled_df, use_container_width=True, height=500)
 
 # ===================================================================
 # 📈 Charts
@@ -203,7 +214,7 @@ with c1:
         color_continuous_scale=['red', 'lightgray', 'green'],
         color_continuous_midpoint=0
     )
-    fig1.update_layout(height=400, showlegend=False, xaxis_title=f"P&L ({CURRENCY_SYMBOL})")
+    fig1.update_layout(height=380, showlegend=False, xaxis_title=f"P&L ({CURRENCY_SYMBOL})")
     st.plotly_chart(fig1, use_container_width=True)
 
 with c2:
@@ -220,14 +231,8 @@ with c2:
     st.plotly_chart(fig2, use_container_width=True)
 
 # ===================================================================
-# 🔁 Auto-refresh
+# ✅ NO JAVASCRIPT RELOAD NEEDED!
+# Streamlit auto-refreshes data every REFRESH_INTERVAL_SEC seconds
 # ===================================================================
 st.divider()
-st.markdown(
-    f"""
-    <script>
-    setTimeout(() => window.location.reload(), {REFRESH_INTERVAL_SEC * 1000});
-    </script>
-    """,
-    unsafe_allow_html=True
-)
+st.caption(f"🔁 Data refreshes automatically every {REFRESH_INTERVAL_SEC} seconds")
