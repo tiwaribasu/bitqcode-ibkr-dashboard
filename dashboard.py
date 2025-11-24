@@ -126,7 +126,6 @@ st.markdown(
         <br>
         <span style="font-size: 1.1rem; color: #666;">
             {pnl_symbol} {format_percent(total_pnl_pct)}
-
         </span>
     </div>
     """,
