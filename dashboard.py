@@ -9,7 +9,7 @@ from datetime import datetime
 # 🛠️ CONFIGURATION
 # ===================================================================
 CURRENCY_SYMBOL = "$"
-REFRESH_INTERVAL_SEC = 30  # Data auto-refreshes every 30 sec (no page reload needed)
+REFRESH_INTERVAL_SEC = 5  # Data auto-refreshes every 30 sec (no page reload needed)
 
 # ===================================================================
 # 🔐 Load Google Sheet URL from Streamlit Secrets
