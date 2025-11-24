@@ -191,9 +191,10 @@ def color_percent(val):
             return "color: green; font-weight: bold;"
     return ""
 
+# ✅ Use .map() instead of .applymap()
 styled_df = display_df.style \
-    .applymap(color_pnl, subset=['UnrealizedPnL']) \
-    .applymap(color_percent, subset=['UnrealizedPnL%'])
+    .map(color_pnl, subset=['UnrealizedPnL']) \
+    .map(color_percent, subset=['UnrealizedPnL%'])
 
 st.dataframe(styled_df, use_container_width=True, height=500)
 
