@@ -10,7 +10,7 @@ from datetime import datetime
 # ===================================================================
 
 # 🔧 CONFIG: Auto-refresh interval (in seconds)
-REFRESH_INTERVAL_SEC = 60  # Change this to 30, 120, etc.
+REFRESH_INTERVAL_SEC = 30  # Change this to 30, 120, etc.
 
 # 🔐 Load Google Sheet URL from secrets
 try:
@@ -124,7 +124,7 @@ df = df.iloc[df['UnrealizedPnL'].abs().argsort()[::-1]].reset_index(drop=True)
 # 🎨 UI
 # ===================================================================
 st.markdown('<div style="text-align:center; font-size:2.2rem; font-weight:700; margin-bottom:1rem;">🏦 Portfolio Dashboard</div>', unsafe_allow_html=True)
-st.caption("Live P&L by strategy • Long/Short aware • Auto-refresh enabled")
+# st.caption("Live P&L by strategy • Long/Short aware • Auto-refresh enabled")
 
 # Metrics
 col1, col2, col3, col4 = st.columns(4)
@@ -140,7 +140,7 @@ with col4:
 st.divider()
 
 # Position Table
-st.subheader("📋 Positions (Sorted by |P&L|)")
+st.subheader("📋 Open Positions")
 
 display_df = df[[
     'Strategy Name', 'Account', 'Symbol', 'SecType', 'Long/Short',
