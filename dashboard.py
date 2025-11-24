@@ -152,6 +152,8 @@ with col3:
 with col4:
     st.metric("Positions", len(df))
 
+st.caption(f"✅ Data refreshed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} • Refresh every {REFRESH_INTERVAL_SEC} sec")
+
 st.divider()
 
 # ===================================================================
@@ -232,7 +234,6 @@ with c2:
 # ℹ️ Footer
 # ===================================================================
 st.divider()
-st.caption(f"✅ Data refreshed at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')} • Refresh every {REFRESH_INTERVAL_SEC} sec")
 
 # Auto-refresh
 st.markdown(
