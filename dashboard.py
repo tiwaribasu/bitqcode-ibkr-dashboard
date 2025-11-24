@@ -130,7 +130,7 @@ df = df.iloc[df['UnrealizedPnL'].abs().argsort()[::-1]].reset_index(drop=True)
 # ===================================================================
 st.markdown(
     '<div style="text-align:center; font-size:2.2rem; font-weight:700; margin-bottom:0.5rem;">'
-    '🏦 Portfolio Dashboard</div>',
+    'MATQCODE IBKR Dashboard</div>',
     unsafe_allow_html=True
 )
 # st.caption("Live P&L • Long/Short aware • Strategy-based view")
