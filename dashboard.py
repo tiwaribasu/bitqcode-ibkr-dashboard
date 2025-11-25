@@ -199,7 +199,7 @@ styled_df = display_df.style \
 st.dataframe(styled_df, use_container_width=True, height=500)
 
 # ===================================================================
-# 📈 Charts
+# 📈 Charts - NOW 4 PLOTS
 # ===================================================================
 c1, c2 = st.columns(2)
 
@@ -217,6 +217,19 @@ with c1:
     )
     fig1.update_layout(height=380, showlegend=False, xaxis_title=f"P&L ({CURRENCY_SYMBOL})")
     st.plotly_chart(fig1, use_container_width=True)
+    
+    st.subheader("📊 P&L by Long/Short")
+    pnl_long_short = df.groupby('Long/Short')['UnrealizedPnL'].sum().reset_index()
+    fig3 = px.bar(
+        pnl_long_short,
+        x='Long/Short',
+        y='UnrealizedPnL',
+        color='UnrealizedPnL',
+        color_continuous_scale=['red', 'lightgray', 'green'],
+        color_continuous_midpoint=0
+    )
+    fig3.update_layout(height=380, showlegend=False, xaxis_title="Position Type", yaxis_title=f"P&L ({CURRENCY_SYMBOL})")
+    st.plotly_chart(fig3, use_container_width=True)
 
 with c2:
     st.subheader("🌍 Exposure Allocation")
@@ -230,3 +243,16 @@ with c2:
         color_discrete_sequence=px.colors.qualitative.Vivid
     )
     st.plotly_chart(fig2, use_container_width=True)
+    
+    st.subheader("🔧 P&L by Security Type")
+    pnl_sectype = df.groupby('SecType')['UnrealizedPnL'].sum().reset_index()
+    fig4 = px.bar(
+        pnl_sectype,
+        x='SecType',
+        y='UnrealizedPnL',
+        color='UnrealizedPnL',
+        color_continuous_scale=['red', 'lightgray', 'green'],
+        color_continuous_midpoint=0
+    )
+    fig4.update_layout(height=380, showlegend=False, xaxis_title="Security Type", yaxis_title=f"P&L ({CURRENCY_SYMBOL})")
+    st.plotly_chart(fig4, use_container_width=True)
