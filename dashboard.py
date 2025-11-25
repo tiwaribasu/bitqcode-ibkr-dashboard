@@ -77,18 +77,24 @@ df = df_raw[list(required_cols)].copy()
 for col in ['Position', 'AvgCost', 'MarketPrice']:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
-# 🔥 AGGRESSIVE CLEANING: Remove ALL invalid/empty rows
-df = df.dropna(subset=['Symbol', 'Position', 'AvgCost', 'MarketPrice', 'Strategy Name', 'SecType'])  # No NaN in key cols
+# 🔥 ULTRA-AGGRESSIVE CLEANING: Remove ALL invalid/empty rows
+# Remove rows with NaN in any critical column
+df = df.dropna(subset=['Strategy Name', 'Symbol', 'SecType', 'Position', 'AvgCost', 'MarketPrice'])
 
-# Remove rows where Symbol or Strategy is blank (including whitespace)
-df = df[df['Symbol'].astype(str).str.strip() != '']
-df = df[df['Strategy Name'].astype(str).str.strip() != '']
-df = df[df['SecType'].astype(str).str.strip() != '']  # Remove blank SecType
+# Remove rows with empty strings or whitespace only in text columns
+text_columns = ['Strategy Name', 'Symbol', 'SecType', 'Account']
+for col in text_columns:
+    if col in df.columns:
+        df = df[df[col].astype(str).str.strip() != '']
+        df = df[df[col].astype(str).str.strip() != 'nan']  # Remove 'nan' strings
+        df = df[df[col].notna()]  # Double check for NaN
 
-# Remove zero positions
+# Remove zero positions and invalid numeric values
 df = df[df['Position'] != 0]
+df = df[df['AvgCost'] > 0]  # AvgCost should be positive
+df = df[df['MarketPrice'] > 0]  # MarketPrice should be positive
 
-# Final reset
+# Reset index after all filtering
 df = df.reset_index(drop=True)
 
 if df.empty:
