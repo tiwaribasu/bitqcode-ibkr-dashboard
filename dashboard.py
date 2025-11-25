@@ -78,11 +78,12 @@ for col in ['Position', 'AvgCost', 'MarketPrice']:
     df[col] = pd.to_numeric(df[col], errors='coerce')
 
 # 🔥 AGGRESSIVE CLEANING: Remove ALL invalid/empty rows
-df = df.dropna(subset=['Symbol', 'Position', 'AvgCost', 'MarketPrice'])  # No NaN in key cols
+df = df.dropna(subset=['Symbol', 'Position', 'AvgCost', 'MarketPrice', 'Strategy Name', 'SecType'])  # No NaN in key cols
 
 # Remove rows where Symbol or Strategy is blank (including whitespace)
 df = df[df['Symbol'].astype(str).str.strip() != '']
 df = df[df['Strategy Name'].astype(str).str.strip() != '']
+df = df[df['SecType'].astype(str).str.strip() != '']  # Remove blank SecType
 
 # Remove zero positions
 df = df[df['Position'] != 0]
@@ -199,60 +200,104 @@ styled_df = display_df.style \
 st.dataframe(styled_df, use_container_width=True, height=500)
 
 # ===================================================================
-# 📈 Charts - NOW 4 PLOTS
+# 📈 Charts - 4 PROFESSIONAL PLOTS (2 per row)
 # ===================================================================
-c1, c2 = st.columns(2)
+# Common chart configuration
+chart_height = 400
+color_scale = ['#FF4B4B', '#E0E0E0', '#00D4AA']  # Red-Gray-Green professional colors
 
-with c1:
+# First row: Strategy and Long/Short
+row1_col1, row1_col2 = st.columns(2)
+
+with row1_col1:
     st.subheader("🎯 P&L by Strategy")
     pnl_strat = df.groupby('Strategy Name')['UnrealizedPnL'].sum().reset_index()
+    pnl_strat = pnl_strat.sort_values('UnrealizedPnL', ascending=True)  # Sort for better visualization
+    
     fig1 = px.bar(
         pnl_strat,
         x='UnrealizedPnL',
         y='Strategy Name',
         orientation='h',
         color='UnrealizedPnL',
-        color_continuous_scale=['red', 'lightgray', 'green'],
+        color_continuous_scale=color_scale,
         color_continuous_midpoint=0
     )
-    fig1.update_layout(height=380, showlegend=False, xaxis_title=f"P&L ({CURRENCY_SYMBOL})")
+    fig1.update_layout(
+        height=chart_height, 
+        showlegend=False, 
+        xaxis_title=f"P&L ({CURRENCY_SYMBOL})",
+        yaxis_title="",
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
     st.plotly_chart(fig1, use_container_width=True)
-    
+
+with row1_col2:
     st.subheader("📊 P&L by Long/Short")
     pnl_long_short = df.groupby('Long/Short')['UnrealizedPnL'].sum().reset_index()
-    fig3 = px.bar(
+    
+    fig2 = px.bar(
         pnl_long_short,
         x='Long/Short',
         y='UnrealizedPnL',
         color='UnrealizedPnL',
-        color_continuous_scale=['red', 'lightgray', 'green'],
+        color_continuous_scale=color_scale,
         color_continuous_midpoint=0
     )
-    fig3.update_layout(height=380, showlegend=False, xaxis_title="Position Type", yaxis_title=f"P&L ({CURRENCY_SYMBOL})")
+    fig2.update_layout(
+        height=chart_height, 
+        showlegend=False, 
+        xaxis_title="Position Type", 
+        yaxis_title=f"P&L ({CURRENCY_SYMBOL})",
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
+    st.plotly_chart(fig2, use_container_width=True)
+
+# Second row: SecType and Exposure Allocation
+row2_col1, row2_col2 = st.columns(2)
+
+with row2_col1:
+    st.subheader("🔧 P&L by Security Type")
+    pnl_sectype = df.groupby('SecType')['UnrealizedPnL'].sum().reset_index()
+    pnl_sectype = pnl_sectype.sort_values('UnrealizedPnL', ascending=True)
+    
+    fig3 = px.bar(
+        pnl_sectype,
+        x='UnrealizedPnL',
+        y='SecType',
+        orientation='h',
+        color='UnrealizedPnL',
+        color_continuous_scale=color_scale,
+        color_continuous_midpoint=0
+    )
+    fig3.update_layout(
+        height=chart_height, 
+        showlegend=False, 
+        xaxis_title=f"P&L ({CURRENCY_SYMBOL})",
+        yaxis_title="",
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)'
+    )
     st.plotly_chart(fig3, use_container_width=True)
 
-with c2:
+with row2_col2:
     st.subheader("🌍 Exposure Allocation")
     alloc_df = df.copy()
     alloc_df['AbsExposure'] = alloc_df['MarketValue'].abs()
-    fig2 = px.pie(
+    
+    # Use professional color palette for pie chart
+    fig4 = px.pie(
         alloc_df,
         values='AbsExposure',
         names='Symbol',
         hole=0.4,
-        color_discrete_sequence=px.colors.qualitative.Vivid
+        color_discrete_sequence=px.colors.qualitative.Bold
     )
-    st.plotly_chart(fig2, use_container_width=True)
-    
-    st.subheader("🔧 P&L by Security Type")
-    pnl_sectype = df.groupby('SecType')['UnrealizedPnL'].sum().reset_index()
-    fig4 = px.bar(
-        pnl_sectype,
-        x='SecType',
-        y='UnrealizedPnL',
-        color='UnrealizedPnL',
-        color_continuous_scale=['red', 'lightgray', 'green'],
-        color_continuous_midpoint=0
+    fig4.update_layout(
+        height=chart_height,
+        showlegend=True,
+        legend=dict(orientation="v", yanchor="middle", y=0.5, x=1.1)
     )
-    fig4.update_layout(height=380, showlegend=False, xaxis_title="Security Type", yaxis_title=f"P&L ({CURRENCY_SYMBOL})")
     st.plotly_chart(fig4, use_container_width=True)
