@@ -3,12 +3,14 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timezone
+import pytz
+import time
 
 # ===================================================================
 # 🛠️ CONFIGURATION
 # ===================================================================
-REFRESH_INTERVAL_SEC = 5
+REFRESH_INTERVAL_SEC = 10  # Changed to 10 seconds
 
 # ===================================================================
 # 🔐 Load Google Sheet URL from Streamlit Secrets
@@ -43,12 +45,24 @@ def format_percent(val):
         return "—"
     return f"{val:+.2f}%"
 
+def get_time_with_timezone(region):
+    """Get current time with appropriate timezone"""
+    if region == "INDIA":
+        # IST timezone (UTC+5:30)
+        tz = pytz.timezone('Asia/Kolkata')
+        now = datetime.now(tz)
+        return now.strftime('%Y-%m-%d %H:%M:%S IST')
+    else:  # GLOBAL - Use US/Eastern or UTC
+        # Using US Eastern Time (ET)
+        tz = pytz.timezone('US/Eastern')
+        now = datetime.now(tz)
+        return now.strftime('%Y-%m-%d %H:%M:%S ET')
+
 # ===================================================================
-# 📥 Load & Clean Data — For Google Sheets with multiple sheets
+# 📥 Load & Clean Data — MANUAL REFRESH CONTROL
 # ===================================================================
-@st.cache_data(ttl=REFRESH_INTERVAL_SEC)
-def load_sheet_data(sheet_gid="0"):
-    """Load specific sheet from Google Sheets using gid parameter"""
+def load_sheet_data_manual(sheet_gid="0"):
+    """Load data without caching for manual refresh control"""
     try:
         # Construct URL with gid parameter for specific sheet
         if "export?format=csv" in GOOGLE_SHEET_CSV_URL:
@@ -139,7 +153,7 @@ def process_data(df_raw, region_name, currency_symbol="$"):
     
     return df
 
-def create_dashboard_tab(df, region_name, currency_symbol="$"):
+def create_dashboard_tab(df, region_name, currency_symbol="$", last_refresh_time=None):
     """Create dashboard for a specific region"""
     
     if df.empty:
@@ -224,7 +238,12 @@ def create_dashboard_tab(df, region_name, currency_symbol="$"):
             unsafe_allow_html=True
         )
     
-    st.caption(f"Last updated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    # Show appropriate timezone based on region
+    st.caption(f"Last updated: {get_time_with_timezone(region_name.split()[0])}")
+    
+    # Show manual refresh time if available
+    if last_refresh_time:
+        st.caption(f"Data refresh: {last_refresh_time}")
     
     st.divider()
     
@@ -373,37 +392,57 @@ def create_dashboard_tab(df, region_name, currency_symbol="$"):
         st.plotly_chart(fig4, use_container_width=True)
 
 # ===================================================================
-# 🏠 MAIN APP
+# 🏠 MAIN APP WITH MANUAL REFRESH CONTROL
 # ===================================================================
 
-# Load data for both sheets
-df_global_raw = load_sheet_data(sheet_gid="5320120")  # GLOBAL sheet
-df_india_raw = load_sheet_data(sheet_gid="649765105")  # INDIA sheet
+# Initialize session state for refresh control
+if 'last_refresh_time' not in st.session_state:
+    st.session_state.last_refresh_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+if 'refresh_counter' not in st.session_state:
+    st.session_state.refresh_counter = 0
+if 'last_data_global' not in st.session_state:
+    st.session_state.last_data_global = None
+if 'last_data_india' not in st.session_state:
+    st.session_state.last_data_india = None
 
-# If the above doesn't work with gid, let's try a different approach
-if df_global_raw.empty or df_india_raw.empty:
-    # Alternative: Try loading all sheets and separating by region column
-    @st.cache_data(ttl=REFRESH_INTERVAL_SEC)
-    def load_all_data():
-        try:
-            # Try to load all data
-            df_all = pd.read_csv(GOOGLE_SHEET_CSV_URL)
-            return df_all
-        except Exception as e:
-            st.error(f"❌ Failed to load data: {str(e)[:150]}...")
-            return pd.DataFrame()
-    
-    df_all = load_all_data()
-    
-    if not df_all.empty:
-        # Check if there's a region column to separate data
-        if 'Region' in df_all.columns:
-            df_global_raw = df_all[df_all['Region'] == 'GLOBAL'].copy()
-            df_india_raw = df_all[df_all['Region'] == 'INDIA'].copy()
-        else:
-            # If no region column, we need to separate some other way
-            st.error("Please add a 'Region' column to your data to separate GLOBAL and INDIA entries.")
-            st.stop()
+# Create a refresh button at the top
+col1, col2, col3 = st.columns([3, 2, 1])
+with col1:
+    st.title("BITQCODE Dashboard")
+with col3:
+    if st.button("🔄 Refresh Now", type="primary"):
+        st.session_state.refresh_counter += 1
+        st.session_state.last_refresh_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        st.rerun()
+
+# Check if we need to refresh based on interval
+current_time = datetime.now()
+last_refresh = datetime.strptime(st.session_state.last_refresh_time, '%Y-%m-%d %H:%M:%S')
+time_diff = (current_time - last_refresh).total_seconds()
+
+# Auto-refresh logic
+if time_diff >= REFRESH_INTERVAL_SEC:
+    st.session_state.refresh_counter += 1
+    st.session_state.last_refresh_time = current_time.strftime('%Y-%m-%d %H:%M:%S')
+
+# Load data for both sheets (manual loading without cache)
+try:
+    df_global_raw = load_sheet_data_manual(sheet_gid="5320120")  # GLOBAL sheet
+    df_india_raw = load_sheet_data_manual(sheet_gid="649765105")  # INDIA sheet
+except Exception as e:
+    st.error(f"Error loading data: {e}")
+    # Fallback to cached version if available
+    if st.session_state.last_data_global is not None:
+        df_global_raw = st.session_state.last_data_global
+        df_india_raw = st.session_state.last_data_india
+        st.warning("Using cached data due to load error")
+    else:
+        df_global_raw = pd.DataFrame()
+        df_india_raw = pd.DataFrame()
+
+# Store data in session state for fallback
+st.session_state.last_data_global = df_global_raw
+st.session_state.last_data_india = df_india_raw
 
 # Process data
 df_global = process_data(df_global_raw, "GLOBAL", "$")
@@ -448,7 +487,28 @@ st.markdown("""
     .main .block-container {
         padding-top: 1rem;
     }
+    
+    /* Style for refresh button */
+    .stButton>button {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+    
+    /* Auto-refresh indicator */
+    .refresh-indicator {
+        font-size: 0.8rem;
+        color: #666;
+        text-align: right;
+        padding-right: 10px;
+    }
 </style>
+""", unsafe_allow_html=True)
+
+# Show refresh status
+st.markdown(f"""
+<div class="refresh-indicator">
+    🔄 Auto-refresh every {REFRESH_INTERVAL_SEC} seconds | Last refresh: {st.session_state.last_refresh_time}
+</div>
 """, unsafe_allow_html=True)
 
 # ===================================================================
@@ -460,9 +520,26 @@ tab1, tab2 = st.tabs([
 ])
 
 with tab1:
-    # Removed the big header - just show the dashboard directly
-    create_dashboard_tab(df_global, "GLOBAL DASHBOARD", "$")
+    # Show refresh indicator
+    create_dashboard_tab(df_global, "GLOBAL DASHBOARD", "$", st.session_state.last_refresh_time)
 
 with tab2:
-    # Removed the big header - just show the dashboard directly
-    create_dashboard_tab(df_india, "INDIA DASHBOARD", "₹")
+    # Show refresh indicator
+    create_dashboard_tab(df_india, "INDIA DASHBOARD", "₹", st.session_state.last_refresh_time)
+
+# JavaScript for auto-refresh (optional alternative)
+st.markdown(f"""
+<script>
+function autoRefresh() {{
+    // Check every 5 seconds if we need to refresh
+    setTimeout(function() {{
+        window.location.reload(1);
+    }}, {REFRESH_INTERVAL_SEC * 1000});
+}}
+// Start auto-refresh
+autoRefresh();
+</script>
+""", unsafe_allow_html=True)
+
+# Add a small delay to prevent rapid refreshing
+time.sleep(0.1)
