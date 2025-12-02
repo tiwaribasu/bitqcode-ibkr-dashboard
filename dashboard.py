@@ -425,37 +425,3 @@ with tab1:
 with tab2:
     st.header("🇮🇳 INDIA Portfolio Dashboard")
     create_dashboard_tab(df_india, "INDIA", "₹")
-
-# ===================================================================
-# 📊 Combined Summary
-# ===================================================================
-st.divider()
-st.subheader("📈 Combined Region Summary")
-
-if not df_global.empty or not df_india.empty:
-    col1, col2, col3 = st.columns(3)
-    
-    if not df_global.empty:
-        with col1:
-            st.metric(
-                label="🌍 GLOBAL Portfolio",
-                value=f"{len(df_global)} positions",
-                delta=format_currency(df_global['UnrealizedPnL'].sum(), "$")
-            )
-    
-    if not df_india.empty:
-        with col2:
-            st.metric(
-                label="🇮🇳 INDIA Portfolio",
-                value=f"{len(df_india)} positions",
-                delta=format_currency(df_india['UnrealizedPnL'].sum(), "₹")
-            )
-    
-    with col3:
-        total_positions = (len(df_global) if not df_global.empty else 0) + (len(df_india) if not df_india.empty else 0)
-        total_exposure = (df_global['MarketValue'].abs().sum() if not df_global.empty else 0) + (df_india['MarketValue'].abs().sum() if not df_india.empty else 0)
-        st.metric(
-            label="📊 Combined Total",
-            value=f"{total_positions} positions",
-            delta=f"Exposure: {format_currency(total_exposure, '$')}"
-        )
