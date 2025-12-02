@@ -407,8 +407,8 @@ if 'last_data_india' not in st.session_state:
 
 # Create a refresh button at the top
 col1, col2, col3 = st.columns([3, 2, 1])
-with col1:
-    st.title("BITQCODE Dashboard")
+# with col1:
+#     st.title("BITQCODE Dashboard")
 with col3:
     if st.button("🔄 Refresh Now", type="primary"):
         st.session_state.refresh_counter += 1
