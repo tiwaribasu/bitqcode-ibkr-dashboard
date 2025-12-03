@@ -707,54 +707,54 @@ def create_india_dashboard(data_dict, live_pnl_df):
     # ===================================================================
     # 📈 LIVE P&L CHART (Today's P&L)
     # ===================================================================
-    if not live_pnl_df.empty:
-        st.divider()
-        st.subheader("📈 Today's Live P&L Trend")
+    # if not live_pnl_df.empty:
+    #     st.divider()
+    #     st.subheader("📈 Today's Live P&L Trend")
         
-        # Get today's date for display
-        ist_tz = pytz.timezone('Asia/Kolkata')
-        today_date = datetime.now(ist_tz).strftime('%Y-%m-%d')
+    #     # Get today's date for display
+    #     ist_tz = pytz.timezone('Asia/Kolkata')
+    #     today_date = datetime.now(ist_tz).strftime('%Y-%m-%d')
         
-        # Calculate stats for display
-        if len(live_pnl_df) > 0:
-            latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
-            highest_pnl = live_pnl_df['Total PnL'].max()
-            lowest_pnl = live_pnl_df['Total PnL'].min()
-            start_pnl = live_pnl_df['Total PnL'].iloc[0] if len(live_pnl_df) > 0 else 0
-            current_change = latest_pnl - start_pnl
+    #     # Calculate stats for display
+    #     if len(live_pnl_df) > 0:
+    #         latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
+    #         highest_pnl = live_pnl_df['Total PnL'].max()
+    #         lowest_pnl = live_pnl_df['Total PnL'].min()
+    #         start_pnl = live_pnl_df['Total PnL'].iloc[0] if len(live_pnl_df) > 0 else 0
+    #         current_change = latest_pnl - start_pnl
             
-            # Create metrics row
-            metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
+    #         # Create metrics row
+    #         metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
             
-            with metric_col1:
-                current_color = "green" if latest_pnl >= 0 else "red"
-                st.metric(
-                    label="Current P&L",
-                    value=format_inr(latest_pnl),
-                    delta=format_inr(current_change)
-                )
+    #         with metric_col1:
+    #             current_color = "green" if latest_pnl >= 0 else "red"
+    #             st.metric(
+    #                 label="Current P&L",
+    #                 value=format_inr(latest_pnl),
+    #                 delta=format_inr(current_change)
+    #             )
             
-            with metric_col2:
-                st.metric(
-                    label="Today's High",
-                    value=format_inr(highest_pnl),
-                    delta=None
-                )
+    #         with metric_col2:
+    #             st.metric(
+    #                 label="Today's High",
+    #                 value=format_inr(highest_pnl),
+    #                 delta=None
+    #             )
             
-            with metric_col3:
-                st.metric(
-                    label="Today's Low",
-                    value=format_inr(lowest_pnl),
-                    delta=None
-                )
+    #         with metric_col3:
+    #             st.metric(
+    #                 label="Today's Low",
+    #                 value=format_inr(lowest_pnl),
+    #                 delta=None
+    #             )
             
-            with metric_col4:
-                data_points = len(live_pnl_df)
-                st.metric(
-                    label="Data Points",
-                    value=f"{data_points}",
-                    delta=None
-                )
+    #         with metric_col4:
+    #             data_points = len(live_pnl_df)
+    #             st.metric(
+    #                 label="Data Points",
+    #                 value=f"{data_points}",
+    #                 delta=None
+    #             )
         
         # Create professional line chart for Live P&L
         fig = go.Figure()
