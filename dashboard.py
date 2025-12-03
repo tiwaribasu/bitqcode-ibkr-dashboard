@@ -803,8 +803,8 @@ def create_india_dashboard(data_dict, live_pnl_df):
         # Update layout for professional look
         fig.update_layout(
             height=400,
-            title=f"Live P&L Trend ({today_date})",
-            title_font=dict(size=20, color='#333'),
+            # title=f"Live P&L Trend ({today_date})",
+            # title_font=dict(size=20, color='#333'),
             xaxis_title="Time (IST)",
             yaxis_title="P&L (₹)",
             plot_bgcolor='rgba(0,0,0,0)',
