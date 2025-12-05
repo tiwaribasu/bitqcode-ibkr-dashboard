@@ -414,19 +414,18 @@ def create_dashboard(data_dict, live_pnl_df, region="INDIA"):
     # Show last updated datetime from LIVE PnL sheet
     if not live_pnl_df.empty and 'DateTime' in live_pnl_df.columns:
         last_datetime = live_pnl_df['DateTime'].iloc[-1]
+        
+        # Format the datetime nicely
         if isinstance(last_datetime, pd.Timestamp):
-            # Convert to appropriate timezone
-            if region == "INDIA":
-                tz = pytz.timezone('Asia/Kolkata')
-            else:
-                tz = pytz.timezone('US/Eastern')
-            last_datetime_tz = last_datetime.tz_localize('UTC').tz_convert(tz)
+            # Format as simple date-time
             timezone_str = "IST" if region == "INDIA" else "ET"
-            formatted_time = last_datetime_tz.strftime(f'%Y-%m-%d %H:%M:%S {timezone_str}')
+
+            formatted_time = last_datetime.strftime(f'%Y-%m-%d %H:%M:%S {timezone_str}')
         else:
             formatted_time = str(last_datetime)
         
-        st.caption(f"📊 Live P&L Last Updated: {formatted_time}")
+        st.caption(f"📊 Last Updated: {formatted_time}")
+    
     
     # ===================================================================
     # 📈 TODAY'S LIVE P&L CHART - SINGLE LINE WITH COLOR BY VALUE & EXTREMES
