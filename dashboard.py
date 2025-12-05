@@ -1166,7 +1166,7 @@ with tab1:
     with gcol1:
         st.write("")  # Empty
     with gcol2:
-        if st.button("🔄 Refresh Global", type="secondary", key="refresh_global"):
+        if st.button("🔄 Refresh", type="secondary", key="refresh_global"):
             st.cache_data.clear()
             st.rerun()
     
@@ -1178,7 +1178,7 @@ with tab2:
     with icol1:
         st.write("")  # Empty
     with icol2:
-        if st.button("🔄 Refresh India", type="secondary", key="refresh_india"):
+        if st.button("🔄 Refresh", type="secondary", key="refresh_india"):
             st.cache_data.clear()
             st.rerun()
     
