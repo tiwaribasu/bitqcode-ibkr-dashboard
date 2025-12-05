@@ -929,26 +929,26 @@ def create_india_dashboard(data_dict, live_pnl_df):
         # Display the chart
         st.plotly_chart(fig, use_container_width=True)
         
-        # Show latest value with more info
-        if len(live_pnl_df) > 0:
-            latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
-            latest_time = live_pnl_df['DateTime'].iloc[-1].strftime('%H:%M:%S')
-            pnl_color = "#10B981" if latest_pnl >= 0 else "#EF4444"
+        # # Show latest value with more info
+        # if len(live_pnl_df) > 0:
+        #     latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
+        #     latest_time = live_pnl_df['DateTime'].iloc[-1].strftime('%H:%M:%S')
+        #     pnl_color = "#10B981" if latest_pnl >= 0 else "#EF4444"
             
-            st.markdown(
-                f"""
-                <div style="text-align: center; margin-top: 10px; padding: 10px; background: {pnl_color}10; border-radius: 8px;">
-                    <span style="font-size: 1.1rem; font-weight: 600; color: {pnl_color};">
-                        📊 Latest: {format_inr(latest_pnl)} at {latest_time}
-                    </span>
-                    <br>
-                    <span style="font-size: 0.9rem; color: #64748B;">
-                        Today's High: {format_inr(highest_value)} • Today's Low: {format_inr(lowest_value)}
-                    </span>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+        #     st.markdown(
+        #         f"""
+        #         <div style="text-align: center; margin-top: 10px; padding: 10px; background: {pnl_color}10; border-radius: 8px;">
+        #             <span style="font-size: 1.1rem; font-weight: 600; color: {pnl_color};">
+        #                 📊 Latest: {format_inr(latest_pnl)} at {latest_time}
+        #             </span>
+        #             <br>
+        #             <span style="font-size: 0.9rem; color: #64748B;">
+        #                 Today's High: {format_inr(highest_value)} • Today's Low: {format_inr(lowest_value)}
+        #             </span>
+        #         </div>
+        #         """,
+        #         unsafe_allow_html=True
+        #     )
 
     
     # ===================================================================
