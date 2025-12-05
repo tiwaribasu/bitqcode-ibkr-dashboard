@@ -599,7 +599,7 @@ def create_india_dashboard(data_dict, live_pnl_df):
     # 🎯 BIG BOLD TOTAL P&L (Closed + Unrealized)
     # ===================================================================
     total_pnl = summary.get('total_pnl', 0)
-    capital = 1000000  # Fixed capital amount
+    capital = 991002.7  # Fixed capital amount
     pnl_percentage = (total_pnl / capital) * 100 if capital > 0 else 0
     
     # Determine arrow and color
