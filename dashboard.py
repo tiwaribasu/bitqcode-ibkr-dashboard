@@ -306,7 +306,7 @@ def create_dashboard(data_dict, live_pnl_df, region="INDIA"):
     summary = data_dict['summary']
     
     if open_df.empty and closed_df.empty:
-        st.info(f"📭 No positions found for {region}.")
+        st.info(f"📭 NO ACTIVE POSITIONS.")
         return
     
     # Get appropriate currency formatter
