@@ -6,6 +6,14 @@ import numpy as np
 from datetime import datetime, date
 import pytz
 
+# Force clear cache at startup
+@st.cache_resource
+def clear_all_caches():
+    st.cache_data.clear()
+
+# Call it once
+clear_all_caches()
+
 # ===================================================================
 # 🛠️ CONFIGURATION
 # ===================================================================
@@ -66,7 +74,7 @@ def get_time_with_timezone(region):
 # ===================================================================
 # 📥 Load & Clean Data — WITH AUTOMATIC REFRESH
 # ===================================================================
-# @st.cache_data(ttl=REFRESH_INTERVAL_SEC)
+@st.cache_data(ttl=REFRESH_INTERVAL_SEC)
 def load_sheet_data(sheet_gid="0"):
     """Load specific sheet from Google Sheets using gid parameter"""
     try:
