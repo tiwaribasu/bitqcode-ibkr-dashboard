@@ -723,146 +723,10 @@ def create_india_dashboard(data_dict, live_pnl_df):
         # Fallback to the original timezone display if no live PnL data
         st.caption(f"Last updated: {get_time_with_timezone('INDIA')}")
 
-    
-    # # ===================================================================
-    # # 📈 LIVE P&L CHART (Today's P&L)
-    # # ===================================================================
-    # if not live_pnl_df.empty:
-    #     st.divider()
-    #     # st.subheader("📈 Today's Live P&L Trend")
-        
-    #     # Get today's date for display
-    #     ist_tz = pytz.timezone('Asia/Kolkata')
-    #     today_date = datetime.now(ist_tz).strftime('%Y-%m-%d')
-        
-    #     # Calculate stats for display
-    #     if len(live_pnl_df) > 0:
-    #         latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
-    #         highest_pnl = live_pnl_df['Total PnL'].max()
-    #         lowest_pnl = live_pnl_df['Total PnL'].min()
-    #         start_pnl = live_pnl_df['Total PnL'].iloc[0] if len(live_pnl_df) > 0 else 0
-    #         current_change = latest_pnl - start_pnl
-            
-    #         # Create metrics row
-    #         metric_col1, metric_col2, metric_col3, metric_col4 = st.columns(4)
-            
-    #         # with metric_col1:
-    #         #     current_color = "green" if latest_pnl >= 0 else "red"
-    #         #     st.metric(
-    #         #         label="Current P&L",
-    #         #         value=format_inr(latest_pnl),
-    #         #         delta=format_inr(current_change)
-    #         #     )
-            
-    #         with metric_col2:
-    #             st.metric(
-    #                 label="Today's High",
-    #                 value=format_inr(highest_pnl),
-    #                 delta=None
-    #             )
-            
-    #         with metric_col3:
-    #             st.metric(
-    #                 label="Today's Low",
-    #                 value=format_inr(lowest_pnl),
-    #                 delta=None
-    #             )
-            
-    #         # with metric_col4:
-    #         #     data_points = len(live_pnl_df)
-    #         #     st.metric(
-    #         #         label="Data Points",
-    #         #         value=f"{data_points}",
-    #         #         delta=None
-    #         #     )
-        
-    #     # Create professional line chart for Live P&L
-    #     fig = go.Figure()
-        
-    #     # Add the main line
-    #     fig.add_trace(go.Scatter(
-    #         x=live_pnl_df['DateTime'],
-    #         y=live_pnl_df['Total PnL'],
-    #         mode='lines+markers',
-    #         name='Live P&L',
-    #         line=dict(color='#00D4AA', width=3),
-    #         marker=dict(size=6, color='#00D4AA'),
-    #         hovertemplate='<b>Time:</b> %{x|%H:%M:%S}<br><b>P&L:</b> ₹%{y:,.2f}<extra></extra>'
-    #     ))
-        
-    #     # Add zero line reference
-    #     fig.add_hline(
-    #         y=0,
-    #         line_dash="dash",
-    #         line_color="gray",
-    #         line_width=1,
-    #         opacity=0.5
-    #     )
-        
-    #     # Add fill for positive/negative areas
-    #     fig.add_trace(go.Scatter(
-    #         x=live_pnl_df['DateTime'],
-    #         y=live_pnl_df['Total PnL'].where(live_pnl_df['Total PnL'] >= 0),
-    #         mode='none',
-    #         fill='tozeroy',
-    #         fillcolor='rgba(0, 212, 170, 0.2)',
-    #         name='Positive',
-    #         showlegend=False
-    #     ))
-        
-    #     fig.add_trace(go.Scatter(
-    #         x=live_pnl_df['DateTime'],
-    #         y=live_pnl_df['Total PnL'].where(live_pnl_df['Total PnL'] < 0),
-    #         mode='none',
-    #         fill='tozeroy',
-    #         fillcolor='rgba(255, 75, 75, 0.2)',
-    #         name='Negative',
-    #         showlegend=False
-    #     ))
-        
-    #     # Update layout for professional look
-    #     fig.update_layout(
-    #         height=400,
-    #         # title=f"Live P&L Trend ({today_date})",
-    #         # title_font=dict(size=20, color='#333'),
-    #         xaxis_title="Time (IST)",
-    #         yaxis_title="P&L (₹)",
-    #         plot_bgcolor='rgba(0,0,0,0)',
-    #         paper_bgcolor='rgba(0,0,0,0)',
-    #         font=dict(family="Arial, sans-serif", size=12, color="#333"),
-    #         hovermode='x unified',
-    #         xaxis=dict(
-    #             showgrid=True,
-    #             gridcolor='rgba(128, 128, 128, 0.2)',
-    #             tickformat='%H:%M',
-    #             title_font=dict(size=14)
-    #         ),
-    #         yaxis=dict(
-    #             showgrid=True,
-    #             gridcolor='rgba(128, 128, 128, 0.2)',
-    #             tickprefix='₹',
-    #             title_font=dict(size=14)
-    #         ),
-    #         legend=dict(
-    #             orientation="h",
-    #             yanchor="bottom",
-    #             y=1.02,
-    #             xanchor="right",
-    #             x=1
-    #         )
-    #     )
-        
-    #     st.plotly_chart(fig, use_container_width=True)
-        
-    #     # # Show data summary
-    #     # if len(live_pnl_df) > 1:
-    #     #     time_range = live_pnl_df['DateTime'].iloc[-1] - live_pnl_df['DateTime'].iloc[0]
-    #     #     avg_interval = time_range / (len(live_pnl_df) - 1) if len(live_pnl_df) > 1 else pd.Timedelta(0)
-    #         # st.caption(f"📊 Data from {live_pnl_df['DateTime'].iloc[0].strftime('%H:%M:%S')} to {live_pnl_df['DateTime'].iloc[-1].strftime('%H:%M:%S')} | Average interval: {avg_interval.seconds // 60} min {avg_interval.seconds % 60} sec")
 
 
     # ===================================================================
-    # 📈 TODAY'S LIVE P&L CHART - SIMPLE COLOR BY VALUE
+    # 📈 TODAY'S LIVE P&L CHART - SINGLE LINE WITH COLOR BY VALUE
     # ===================================================================
     if not live_pnl_df.empty:
         st.divider()
@@ -873,82 +737,81 @@ def create_india_dashboard(data_dict, live_pnl_df):
         # Create the chart
         fig = go.Figure()
         
-        # Create separate traces for positive and negative values
-        positive_mask = live_pnl_df['Total PnL'] >= 0
-        negative_mask = live_pnl_df['Total PnL'] < 0
+        # Create a single line that changes color based on value
+        # We need to split the line at zero crossings to handle color changes
+        segments = []
+        current_segment = {'x': [], 'y': [], 'color': None}
         
-        # Add positive segment (green)
-        if positive_mask.any():
-            fig.add_trace(go.Scatter(
-                x=live_pnl_df.loc[positive_mask, 'DateTime'],
-                y=live_pnl_df.loc[positive_mask, 'Total PnL'],
-                mode='lines',
-                line=dict(
-                    shape='spline',
-                    smoothing=1.0,
-                    width=3,
-                    color='#10B981'  # Green
-                ),
-                name='Positive',
-                showlegend=False,
-                hovertemplate='<b>%{x|%H:%M}</b><br>₹%{y:,.2f}<extra></extra>'
-            ))
-        
-        # Add negative segment (red)
-        if negative_mask.any():
-            fig.add_trace(go.Scatter(
-                x=live_pnl_df.loc[negative_mask, 'DateTime'],
-                y=live_pnl_df.loc[negative_mask, 'Total PnL'],
-                mode='lines',
-                line=dict(
-                    shape='spline',
-                    smoothing=1.0,
-                    width=3,
-                    color='#EF4444'  # Red
-                ),
-                name='Negative',
-                showlegend=False,
-                hovertemplate='<b>%{x|%H:%M}</b><br>₹%{y:,.2f}<extra></extra>'
-            ))
-        
-        # Connect the segments at zero crossing (optional but cleaner)
-        # Find points where the line crosses zero
-        for i in range(1, len(live_pnl_df)):
-            prev_val = live_pnl_df['Total PnL'].iloc[i-1]
-            curr_val = live_pnl_df['Total PnL'].iloc[i]
+        for i in range(len(live_pnl_df)):
+            current_val = live_pnl_df['Total PnL'].iloc[i]
+            current_time = live_pnl_df['DateTime'].iloc[i]
+            current_color = '#10B981' if current_val >= 0 else '#EF4444'  # Green/Red
             
-            # If sign changes, add a connecting point at y=0
-            if prev_val * curr_val < 0:
-                # Linear interpolation to find time at y=0
+            if not current_segment['x']:
+                # First point
+                current_segment['x'].append(current_time)
+                current_segment['y'].append(current_val)
+                current_segment['color'] = current_color
+            elif current_segment['color'] == current_color:
+                # Same color, continue segment
+                current_segment['x'].append(current_time)
+                current_segment['y'].append(current_val)
+            else:
+                # Color changed (crossed zero), we need to handle the transition
+                
+                # 1. Save the current segment up to the zero crossing
+                prev_val = live_pnl_df['Total PnL'].iloc[i-1]
                 prev_time = live_pnl_df['DateTime'].iloc[i-1]
-                curr_time = live_pnl_df['DateTime'].iloc[i]
-                t = -prev_val / (curr_val - prev_val)
-                zero_time = prev_time + (curr_time - prev_time) * t
                 
-                # Add small connecting segments
-                fig.add_trace(go.Scatter(
-                    x=[prev_time, zero_time],
-                    y=[prev_val, 0],
-                    mode='lines',
-                    line=dict(
-                        width=3,
-                        color='#EF4444' if prev_val < 0 else '#10B981'
-                    ),
-                    showlegend=False,
-                    hoverinfo='skip'
-                ))
+                # Calculate the exact zero crossing point
+                # Linear interpolation: y = mx + b
+                m = (current_val - prev_val) / ((current_time - prev_time).total_seconds())
+                # Find time when y = 0
+                zero_time_seconds = -prev_val / m if m != 0 else 0
+                zero_time = prev_time + pd.Timedelta(seconds=zero_time_seconds)
                 
-                fig.add_trace(go.Scatter(
-                    x=[zero_time, curr_time],
-                    y=[0, curr_val],
-                    mode='lines',
-                    line=dict(
-                        width=3,
-                        color='#EF4444' if curr_val < 0 else '#10B981'
-                    ),
-                    showlegend=False,
-                    hoverinfo='skip'
-                ))
+                # Add point at zero to complete current segment
+                current_segment['x'].append(zero_time)
+                current_segment['y'].append(0)
+                segments.append(current_segment.copy())
+                
+                # 2. Start new segment from zero point
+                current_segment = {
+                    'x': [zero_time, current_time],
+                    'y': [0, current_val],
+                    'color': current_color
+                }
+        
+        # Add the last segment
+        if current_segment['x']:
+            segments.append(current_segment)
+        
+        # Add all segments as separate traces (but they'll appear as one continuous line)
+        for segment in segments:
+            fig.add_trace(go.Scatter(
+                x=segment['x'],
+                y=segment['y'],
+                mode='lines',
+                line=dict(
+                    shape='spline',
+                    smoothing=1.0,
+                    width=3,
+                    color=segment['color']
+                ),
+                showlegend=False,
+                hoverinfo='skip'  # We'll add hover separately
+            ))
+        
+        # Add invisible trace for hover information (makes hover work on entire line)
+        fig.add_trace(go.Scatter(
+            x=live_pnl_df['DateTime'],
+            y=live_pnl_df['Total PnL'],
+            mode='lines',
+            line=dict(width=0),  # Invisible
+            hovertemplate='<b>%{x|%H:%M:%S}</b><br>₹%{y:,.2f}<extra></extra>',
+            showlegend=False,
+            name='Live P&L'
+        ))
         
         # Add zero line
         fig.add_hline(
@@ -958,6 +821,33 @@ def create_india_dashboard(data_dict, live_pnl_df):
             line_width=1,
             opacity=0.3
         )
+        
+        # Add area fill with appropriate color
+        # Create arrays for positive and negative fills
+        x_full = live_pnl_df['DateTime'].tolist()
+        y_full = live_pnl_df['Total PnL'].tolist()
+        
+        # Fill area
+        fig.add_trace(go.Scatter(
+            x=x_full,
+            y=y_full,
+            mode='none',
+            fill='tozeroy',
+            fillcolor='rgba(16, 185, 129, 0.1)',  # Light green for positive
+            showlegend=False,
+            hoverinfo='skip'
+        ))
+        
+        # Also fill negative area separately (overlay)
+        fig.add_trace(go.Scatter(
+            x=x_full,
+            y=[min(y, 0) for y in y_full],  # Only negative part
+            mode='none',
+            fill='tozeroy',
+            fillcolor='rgba(239, 68, 68, 0.1)',  # Light red for negative
+            showlegend=False,
+            hoverinfo='skip'
+        ))
         
         # Clean layout
         fig.update_layout(
@@ -971,21 +861,41 @@ def create_india_dashboard(data_dict, live_pnl_df):
                 showgrid=False,
                 tickformat='%H:%M',
                 tickfont=dict(size=10, color='#64748B'),
-                linecolor='#E2E8F0'
+                linecolor='#E2E8F0',
+                showline=True
             ),
             yaxis=dict(
                 showgrid=True,
                 gridcolor='#F1F5F9',
+                gridwidth=1,
                 tickprefix='₹',
                 tickformat=',.0f',
                 tickfont=dict(size=10, color='#64748B'),
-                linecolor='#E2E8F0'
+                linecolor='#E2E8F0',
+                showline=True
             ),
             showlegend=False
         )
         
         # Display the chart
         st.plotly_chart(fig, use_container_width=True)
+        
+        # Show latest value
+        if len(live_pnl_df) > 0:
+            latest_pnl = live_pnl_df['Total PnL'].iloc[-1]
+            latest_time = live_pnl_df['DateTime'].iloc[-1].strftime('%H:%M:%S')
+            pnl_color = "#10B981" if latest_pnl >= 0 else "#EF4444"
+            
+            st.markdown(
+                f"""
+                <div style="text-align: center; margin-top: 10px;">
+                    <span style="font-size: 1.1rem; font-weight: 600; color: {pnl_color};">
+                        Latest: {format_inr(latest_pnl)} at {latest_time}
+                    </span>
+                </div>
+                """,
+                unsafe_allow_html=True
+            )
 
 
 
