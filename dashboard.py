@@ -622,9 +622,7 @@ def create_india_dashboard(data_dict, live_pnl_df):
                 {format_inr(total_pnl)}
             </span>
             <br>
-            <span style="font-size: 1.1rem; color: {pnl_color}; font-weight: 600;">
-                {change_text}
-            </span>
+            
         </div>
         """,
         unsafe_allow_html=True
