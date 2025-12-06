@@ -112,13 +112,20 @@ def process_live_pnl_data(df_raw):
     if df.empty:
         return df
     
-    # Get today's date in IST (Asia/Kolkata)
-    ist_tz = pytz.timezone('Asia/Kolkata')
-    today_ist = datetime.now(ist_tz).date()
+    # # Get today's date in IST (Asia/Kolkata)
+    # ist_tz = pytz.timezone('Asia/Kolkata')
+    # today_ist = datetime.now(ist_tz).date()
     
-    # Filter for today's data only (based on date part, ignoring time)
+    # # Filter for today's data only (based on date part, ignoring time)
+    # df['Date'] = df['DateTime'].dt.date
+    # df_today = df[df['Date'] == today_ist].copy()
+
+    # Get the latest date from the data
     df['Date'] = df['DateTime'].dt.date
-    df_today = df[df['Date'] == today_ist].copy()
+    latest_date = df['Date'].max()
+    
+    # Filter for the latest date's data only
+    df_today = df[df['Date'] == latest_date].copy()
     
     # Sort by DateTime
     df_today = df_today.sort_values('DateTime')
